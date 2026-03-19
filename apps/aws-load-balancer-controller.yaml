@@ -17,7 +17,7 @@ spec:
       values: |
         clusterName: sre-demo
         serviceAccount:
-          create: true
+          create: false
           name: aws-load-balancer-controller
 
   destination:
