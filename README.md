@@ -59,7 +59,24 @@ should see
 
 - platform-root
 
+1. request certificate for argocd
 
+```
+aws acm request-certificate \
+  --profile theerawatsmc \
+  --region ap-southeast-1 \
+  --domain-name '*.thebrainsurf.site' \
+  --subject-alternative-names 'thebrainsurf.site' \
+  --validation-method DNS
+```
 
+Should return example :
 
+```
+{
+
+ "CertificateArn": "arn:aws:acm:ap-southeast-1:281789399995:certificate/163daf56-7a5d-4b85-924f-15297d22ad51"
+
+}
+```
 
