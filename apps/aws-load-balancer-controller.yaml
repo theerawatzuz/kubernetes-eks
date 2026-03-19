@@ -19,6 +19,8 @@ spec:
         serviceAccount:
           create: false
           name: aws-load-balancer-controller
+          annotations: 
+            eks.amazonaws.com/role-arn: arn:aws:iam::281789399995:role/eksctl-sre-demo-addon-iamserviceaccount-kube--Role1-U6NZBEx00vzo
 
   destination:
     server: https://kubernetes.default.svc
