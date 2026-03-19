@@ -11,7 +11,7 @@ kubectl apply --server-side --force-conflicts \
 -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
-##check argocd ready with
+## check argocd ready with
 
 kubectl get pods -n argocd
 
@@ -34,5 +34,8 @@ https://localhost:8080
 username:
 admin
 password: (get password with below cli)
+
+```
 kubectl -n argocd get secret argocd-initial-admin-secret \
 -o jsonpath="{.data.password}" | base64 -d && echo
+```
