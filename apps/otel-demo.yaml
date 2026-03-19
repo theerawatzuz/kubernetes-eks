@@ -14,22 +14,22 @@ spec:
 
     helm:
       values: |
-        ingress:
-          enabled: true
-          ingressClassName: alb
-          annotations:
-            alb.ingress.kubernetes.io/scheme: internet-facing
-            alb.ingress.kubernetes.io/target-type: ip
-            alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
-            alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-southeast-1:281789399995:certificate/163daf56-7a5d-4b85-924f-15297d22ad51
-            alb.ingress.kubernetes.io/ssl-redirect: "443"
+        frontendProxy:
+          ingress:
+            enabled: true
+            ingressClassName: alb
+            annotations:
+              alb.ingress.kubernetes.io/scheme: internet-facing
+              alb.ingress.kubernetes.io/target-type: ip
+              alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+              alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-southeast-1:281789399995:certificate/163daf56-7a5d-4b85-924f-15297d22ad51
+              alb.ingress.kubernetes.io/ssl-redirect: "443"
 
-          hosts:
-            - host: otel.thebrainsurf.site
-              paths:
-                - path: /
-                  pathType: Prefix
-                  port: 8080
+            hosts:
+              - host: otel.thebrainsurf.site
+                paths:
+                  - path: /
+                    pathType: Prefix
 
   destination:
     server: https://kubernetes.default.svc
