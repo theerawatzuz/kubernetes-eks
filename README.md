@@ -29,7 +29,7 @@ Running
 kubectl port-forward svc/argocd-server -n argocd 8080:443
 
 open browser
-https://localhost:8080
+[https://localhost:8080](https://localhost:8080)
 
 username:
 admin
@@ -39,3 +39,20 @@ password: (get password with below cli)
 kubectl -n argocd get secret argocd-initial-admin-secret \
 -o jsonpath="{.data.password}" | base64 -d && echo
 ```
+
+1. Apply root-app.yaml
+
+```
+kubectl apply -f bootstrap/argocd/root-app.yaml
+```
+
+check with 
+
+```
+kubectl get application -n argocd
+```
+
+should see 
+
+- platform-root 
+
