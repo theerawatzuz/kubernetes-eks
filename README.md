@@ -80,3 +80,4 @@ Should return example :
 }
 ```
 
+let Arn to ingress.yaml on argocd:
