@@ -4,9 +4,17 @@ metadata:
   name: argocd-server
   namespace: argocd
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    kubernetes.io/ingress.class: alb
+
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/certificate-arn: <ACM_CERT_ARN>
+
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+
 spec:
-  ingressClassName: nginx
   rules:
     - host: argocd.thebrainsurf.site
       http:
