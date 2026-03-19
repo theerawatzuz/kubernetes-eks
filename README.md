@@ -42,6 +42,9 @@ kubectl -n argocd get secret argocd-initial-admin-secret \
 
 1. Apply root-app.yaml
 
+- change git repo as needed.
+- change dns as real use needed.
+
 ```
 kubectl apply -f bootstrap/argocd/root-app.yaml
 ```
@@ -54,5 +57,9 @@ kubectl get application -n argocd
 
 should see 
 
-- platform-root 
+- platform-root
+
+
+
+
 
