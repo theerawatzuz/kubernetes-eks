@@ -1,41 +1,26 @@
-apiVersion: argoproj.io/v1alpha1
-kind: Application
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
   name: otel-demo
-  namespace: argocd
+  namespace: otel-demo
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-southeast-1:281789399995:certificate/163daf56-7a5d-4b85-924f-15297d22ad51
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
 
 spec:
-  project: default
-
-  source:
-    repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
-    chart: opentelemetry-demo
-    targetRevision: 0.30.0
-
-    helm:
-      values: |
-        frontendProxy:
-          ingress:
-            enabled: true
-            ingressClassName: alb
-            annotations:
-              alb.ingress.kubernetes.io/scheme: internet-facing
-              alb.ingress.kubernetes.io/target-type: ip
-              alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
-              alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-southeast-1:281789399995:certificate/163daf56-7a5d-4b85-924f-15297d22ad51
-              alb.ingress.kubernetes.io/ssl-redirect: "443"
-
-            hosts:
-              - host: otel.thebrainsurf.site
-                paths:
-                  - path: /
-                    pathType: Prefix
-
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: otel-demo
-
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
+  ingressClassName: alb
+  rules:
+    - host: otel.thebrainsurf.site
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-proxy
+                port:
+                  number: 8080
