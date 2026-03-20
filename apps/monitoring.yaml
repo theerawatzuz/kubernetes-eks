@@ -10,10 +10,13 @@ spec:
   source:
     repoURL: https://prometheus-community.github.io/helm-charts
     chart: kube-prometheus-stack
-    targetRevision: 58.0.0
+    targetRevision: 55.5.0
 
     helm:
+      skipCrds: false
       values: |
+        crds:
+          enabled: true
         grafana:
           adminPassword: admin
 
@@ -31,3 +34,5 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true
+      - Replace=true
