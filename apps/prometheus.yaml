@@ -10,20 +10,52 @@ spec:
   source:
     repoURL: https://prometheus-community.github.io/helm-charts
     chart: prometheus
-    targetRevision: 25.8.0
+    targetRevision: 23.4.0
 
     helm:
       values: |
         server:
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "500m"
+            limits:
+              memory: "8Gi"
+              cpu: "2000m"
           persistentVolume:
             enabled: true
-            size: 10Gi
+            storageClass: prometheus-storage
+            size: 50Gi
+          replicaCount: 1
+          retention: "15d"
+
+        serviceAccounts:
+          server:
+            create: true
+            name: prometheus-server
+            annotations:
+              eks.amazonaws.com/role-arn: "arn:aws:iam::281789399995:role/cloudwatch-observability"
 
         alertmanager:
           enabled: true
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
           persistentVolume:
             enabled: true
-            size: 2Gi
+            storageClass: gp3
+            size: 5Gi
+          replicaCount: 1
+
+        nodeExporter:
+          enabled: true
+
+        pushgateway:
+          enabled: false
 
   destination:
     server: https://kubernetes.default.svc
