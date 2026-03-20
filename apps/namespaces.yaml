@@ -8,7 +8,7 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/your-repo/your-project # แก้ไข URL ให้ตรงกับ repo ของคุณ
+    repoURL: https://github.com/theerawatzuz/kubernetes-eks
     targetRevision: HEAD
     path: namespaces
 
