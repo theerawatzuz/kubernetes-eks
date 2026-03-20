@@ -14,7 +14,7 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
-    - host: grafana.thebrainsurf.site
+    - host: grafana-demo.thebrainsurf.site
       http:
         paths:
           - path: /
