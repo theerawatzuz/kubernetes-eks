@@ -1,0 +1,108 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: promtail
+  namespace: argocd
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: promtail
+    targetRevision: 6.15.3
+
+    helm:
+      values: |
+        config:
+          serverPort: 3101
+          clients:
+            - url: http://loki:3100/loki/api/v1/push
+              
+          scrapeConfigs:
+            # Kubernetes pods
+            - job_name: kubernetes-pods
+              kubernetes_sd_configs:
+                - role: pod
+              pipeline_stages:
+                - cri: {}
+              relabel_configs:
+                - source_labels:
+                    - __meta_kubernetes_pod_controller_name
+                  regex: ([0-9a-z-.]+?)(-[0-9a-f]{8,10})?
+                  target_label: __tmp_controller_name
+                - source_labels:
+                    - __meta_kubernetes_pod_label_app_kubernetes_io_name
+                    - __meta_kubernetes_pod_label_app
+                    - __tmp_controller_name
+                    - __meta_kubernetes_pod_name
+                  regex: ^;*([^;]+)(;.*)?$
+                  target_label: app
+                - source_labels:
+                    - __meta_kubernetes_pod_label_app_kubernetes_io_instance
+                    - __meta_kubernetes_pod_label_instance
+                  regex: ^;*([^;]+)(;.*)?$
+                  target_label: instance
+                - source_labels:
+                    - __meta_kubernetes_pod_label_app_kubernetes_io_component
+                    - __meta_kubernetes_pod_label_component
+                  regex: ^;*([^;]+)(;.*)?$
+                  target_label: component
+                - replacement: /var/log/pods/*$1/*.log
+                  separator: /
+                  source_labels:
+                    - __meta_kubernetes_pod_uid
+                    - __meta_kubernetes_pod_container_name
+                  target_label: __path__
+                - replacement: /var/log/pods/*$1/*.log
+                  regex: true/(.*)
+                  separator: /
+                  source_labels:
+                    - __meta_kubernetes_pod_annotationpresent_kubernetes_io_config_hash
+                    - __meta_kubernetes_pod_annotation_kubernetes_io_config_hash
+                    - __meta_kubernetes_pod_container_name
+                  target_label: __path__
+                  
+            # OTEL Demo specific logs
+            - job_name: otel-demo
+              kubernetes_sd_configs:
+                - role: pod
+                  namespaces:
+                    names:
+                      - otel-demo
+              pipeline_stages:
+                - cri: {}
+                - json:
+                    expressions:
+                      trace_id: trace_id
+                      span_id: span_id
+                      level: level
+                      message: message
+                - labels:
+                    trace_id:
+                    span_id:
+                    level:
+              relabel_configs:
+                - source_labels: [__meta_kubernetes_pod_name]
+                  target_label: pod
+                - source_labels: [__meta_kubernetes_namespace]
+                  target_label: namespace
+                - source_labels: [__meta_kubernetes_pod_container_name]
+                  target_label: container
+                  
+        daemonset:
+          enabled: true
+          
+        serviceMonitor:
+          enabled: true
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

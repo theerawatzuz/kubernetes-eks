@@ -1,0 +1,77 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki
+  namespace: argocd
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: loki
+    targetRevision: 5.41.4
+
+    helm:
+      values: |
+        loki:
+          auth_enabled: false
+          
+          server:
+            http_listen_port: 3100
+            
+          ingester:
+            lifecycler:
+              address: 127.0.0.1
+              ring:
+                kvstore:
+                  store: inmemory
+                replication_factor: 1
+            chunk_idle_period: 1m
+            max_chunk_age: 1m
+            chunk_target_size: 1048576
+            chunk_retain_period: 30s
+            
+          schema_config:
+            configs:
+              - from: 2020-10-24
+                store: boltdb-shipper
+                object_store: filesystem
+                schema: v11
+                index:
+                  prefix: index_
+                  period: 24h
+                  
+          storage_config:
+            boltdb_shipper:
+              active_index_directory: /loki/boltdb-shipper-active
+              cache_location: /loki/boltdb-shipper-cache
+              shared_store: filesystem
+            filesystem:
+              directory: /loki/chunks
+              
+          limits_config:
+            enforce_metric_name: false
+            reject_old_samples: true
+            reject_old_samples_max_age: 168h
+            
+        # Single binary mode
+        deploymentMode: SingleBinary
+
+        singleBinary:
+          replicas: 1
+          persistence:
+            enabled: true
+            size: 10Gi
+            storageClass: gp3
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

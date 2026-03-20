@@ -18,7 +18,16 @@ spec:
 
         persistence:
           enabled: true
-          existingClaim: grafana-storage
+          size: 10Gi
+          storageClass: gp3
+
+        # Grafana configuration
+        grafana.ini:
+          server:
+            root_url: "https://grafana-demo.thebrainsurf.site"
+          auth.anonymous:
+            enabled: true
+            org_role: Viewer
 
         datasources:
           datasources.yaml:
@@ -29,6 +38,34 @@ spec:
               url: http://prometheus-server.monitoring.svc.cluster.local
               access: proxy
               isDefault: true
+            - name: Loki
+              type: loki
+              url: http://loki.monitoring.svc.cluster.local:3100
+              access: proxy
+            - name: Tempo
+              type: tempo
+              url: http://tempo.monitoring.svc.cluster.local:3200
+              access: proxy
+              jsonData:
+                tracesToLogs:
+                  datasourceUid: loki
+                  tags: ['job', 'instance', 'pod', 'namespace']
+                  mappedTags: [{ key: 'service.name', value: 'service' }]
+                  mapTagNamesEnabled: false
+                  spanStartTimeShift: '1h'
+                  spanEndTimeShift: '1h'
+                  filterByTraceID: false
+                  filterBySpanID: false
+                tracesToMetrics:
+                  datasourceUid: prometheus
+                  tags: [{ key: 'service.name', value: 'service' }, { key: 'job' }]
+                  queries:
+                    - name: 'Sample query'
+                      query: 'sum(rate(traces_spanmetrics_latency_bucket{$$__tags}[5m]))'
+                serviceMap:
+                  datasourceUid: prometheus
+                nodeGraph:
+                  enabled: true
 
   destination:
     server: https://kubernetes.default.svc

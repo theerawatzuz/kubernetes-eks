@@ -12,6 +12,71 @@ spec:
     chart: opentelemetry-demo
     targetRevision: 0.30.0
 
+    helm:
+      values: |
+        # Frontend และ API services
+        frontendProxy:
+          service:
+            type: ClusterIP
+
+        frontend:
+          service:
+            type: ClusterIP
+
+        # Disable built-in observability (use external)
+        jaeger:
+          enabled: false  # Use Tempo instead
+
+        grafana:
+          enabled: false  # Use main Grafana
+
+        prometheus:
+          enabled: false  # Use main Prometheus
+
+        # OTEL Collector configuration
+        otelCollector:
+          enabled: true
+          config:
+            receivers:
+              otlp:
+                protocols:
+                  grpc:
+                    endpoint: 0.0.0.0:4317
+                  http:
+                    endpoint: 0.0.0.0:4318
+            processors:
+              batch:
+            exporters:
+              # Send traces to Tempo
+              otlp/tempo:
+                endpoint: http://tempo.monitoring.svc.cluster.local:4317
+                tls:
+                  insecure: true
+              # Send metrics to Prometheus
+              prometheus:
+                endpoint: "0.0.0.0:8889"
+              # Logging for debugging
+              logging:
+                loglevel: info
+            service:
+              pipelines:
+                traces:
+                  receivers: [otlp]
+                  processors: [batch]
+                  exporters: [otlp/tempo, logging]
+                metrics:
+                  receivers: [otlp]
+                  processors: [batch]
+                  exporters: [prometheus, logging]
+                logs:
+                  receivers: [otlp]
+                  processors: [batch]
+                  exporters: [logging]
+
+        # Enable load generator for testing
+        loadgenerator:
+          enabled: true
+
   destination:
     server: https://kubernetes.default.svc
     namespace: otel-demo

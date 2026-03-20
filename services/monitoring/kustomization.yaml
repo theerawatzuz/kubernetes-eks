@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - prometheus-ingress.yaml
   - grafana-ingress.yaml
+  - loki-tempo-ingress.yaml
