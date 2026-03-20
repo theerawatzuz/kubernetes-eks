@@ -24,7 +24,7 @@ spec:
               cpu: "2000m"
           persistentVolume:
             enabled: true
-            storageClass: prometheus-storage
+            storageClass: gp3
             size: 50Gi
           replicaCount: 1
           retention: "15d"
